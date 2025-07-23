@@ -1,0 +1,66 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: zedstep
+# "service" is the name of this project. This will also be added to your AWS resource names.
+service: serverless-todo
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  profile: default
+  region: eu-north-1
+  stage: dev
+  #environment:
+  #  TODOS_TABLE: TodosTable
+  #apiGateway:
+  #  apiKeySourceType: HEADER
+
+functions:
+  createTodo:
+    handler: functions/createTodo/todo.handler
+    name: create-todo-${sls:stage}
+    description: Create todos
+    role: arn:aws:iam::715841328066:role/my-serverless
+    events:
+      - httpAPI:
+          path: /todos
+          method: post
+  getTodos:
+    handler: functions/getTodos/todo.handler
+    name: serverless-todo-${sls:stage}
+    description: Get todos
+    role: arn:aws:iam::715841328066:role/my-serverless
+    events:
+      - httpAPI:
+          path: /todos
+          method: get
+  deleteTodo:
+    handler: functions/deleteTodo/todo.handler
+    name: delete-todo-${sls:stage}
+    description: Delete todos
+    role: arn:aws:iam::715841328066:role/my-serverless
+    events:
+      - httpAPI:
+          path: /todos/{id}
+          method: delete
+
+resources:
+  Resources:
+    TodosTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: todosTable
+        AttributeDefinitions:
+          - AttributeName: pk
+            AttributeType: S
+          - AttributeName: sk
+            AttributeType: S
+        KeySchema:
+          - AttributeName: pk
+            KeyType: HASH
+          - AttributeName: sk
+            KeyType: RANGE 
+        BillingMode: PAY_PER_REQUEST
+
+
+package:
+  individually: true
